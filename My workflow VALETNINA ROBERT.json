@@ -1,0 +1,1604 @@
+{
+  "name": "My workflow 4",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Recibes una solicitud del cliente para coordinar un turno en el taller de motos para realizar un servicio a su moto",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Eres el Coordinador Inteligente de MLT Pro Bikes. Tu único objetivo es procesar la solicitud entrante de taller que te proporcionará el usuario y estructurar la información para la posterior aprobación del mecánico.\n\nSIGUE ESTRICTAMENTE ESTOS PASOS:\n\n1. IDENTIFICAR EL SERVICIO Y COSTO:\nAnaliza el servicio solicitado por el cliente que se te entrega en el mensaje del usuario {{ $json['Por favor indique que servicio necesita su moto'] }}. Utiliza la herramienta de \"Airtable Precio\" para buscar en la tabla \"Servicios\" el servicio que mejor coincida y extrae su costo exacto. Está terminantemente PROHIBIDO inventar números bajo ninguna circunstancia.\n\n2. SELECCIONAR EL TURNO DISPONIBLE:\nUtiliza la herramienta de \"Airtable Agenda\" para leer la tabla \"Agenda\". Ordena cronológicamente todos los registros devueltos (de la fecha más antigua a la más reciente, y del turno más temprano al más tarde). Identifica la primera fecha y turno a donde la columna \"Status\" sea exactamente \"Disponible\". No inventes fechas ni turnos.\n\n3. CONTROL DE ERRORES Y DISPONIBILIDAD (CRÍTICO):\n- Si la herramienta \"Airtable Agenda\" no devuelve ningún registro con Status \"Disponible\", detén la ejecución inmediatamente y genera un ERROR explícito indicando \"ERROR: No hay disponibilidad en la agenda\".\n- Si al extraer los datos del turno disponible falta alguno de los parámetros obligatorios (Fecha o Hora/Turno), detén la ejecución inmediatamente y genera un ERROR explícito indicando \"ERROR: Datos de agenda incompletos\".\n- Está terminantemente PROHIBIDO inventar o asumir datos si no se encuentran en la base de datos.\n\n4. REGLAS ESTRICTAS DE SALIDA:\n- Si el proceso es exitoso y se encuentran todos los datos, tu respuesta debe ser EXCLUSIVAMENTE el mensaje estructurado para el mecánico. No agregues introducciones, confirmaciones ni saludos iniciales fuera de la estructura.\n\nGenera tu respuesta final respetando estrictamente esta estructura exacta:\n\nHola. Ha ingresado una solicitud de servicio de {{ $json['Por favor indique que servicio necesita su moto'] }}.\nCosto del servicio: $[aquí coloca el costo exacto encontrado]\n\nRevisé la agenda en la base de datos y hay lugar disponible para el día [aquí coloca la Fecha encontrada] a las [aquí coloca el Horario/Turno encontrado] hs.\n\nPor favor, revisá la viabilidad técnica y hacé clic en el botón de abajo para aprobar definitivamente este turno y notificar al cliente."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -528,
+        -976
+      ],
+      "id": "3a556702-e4f0-437a-896f-2879304b4190",
+      "name": "AI Agent1",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "alwaysOutputData": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -704,
+        -784
+      ],
+      "id": "2209d450-ae79-4d89-9931-372f03408e6c",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "UXIQrtFaqXJO8kgO",
+          "name": "OpenAI account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Search records in Airtable",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app8yJE8irWYVUPsQ",
+          "mode": "list",
+          "cachedResultName": "CODER",
+          "cachedResultUrl": "https://airtable.com/app8yJE8irWYVUPsQ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3X2kAF4jBCqfDU",
+          "mode": "list",
+          "cachedResultName": "Servicios",
+          "cachedResultUrl": "https://airtable.com/app8yJE8irWYVUPsQ/tbl3X2kAF4jBCqfDU"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.2,
+      "position": [
+        -400,
+        -752
+      ],
+      "id": "fbbf7d18-e97e-4c20-8cce-4247825bd6cc",
+      "name": "Airtable Precio",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "KLSTP2wSfS4HgA38",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $execution.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        -544,
+        -784
+      ],
+      "id": "b9ee6ed4-85a9-4f0f-be9a-f8df9a9dbb5d",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app8yJE8irWYVUPsQ",
+          "mode": "list",
+          "cachedResultName": "CODER",
+          "cachedResultUrl": "https://airtable.com/app8yJE8irWYVUPsQ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbloLa14OuyP4dU98",
+          "mode": "list",
+          "cachedResultName": "Agenda",
+          "cachedResultUrl": "https://airtable.com/app8yJE8irWYVUPsQ/tbloLa14OuyP4dU98"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        -768
+      ],
+      "id": "e843d571-c221-48f5-a8e3-5eb6d19d4924",
+      "name": "Airtable Agenda",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "KLSTP2wSfS4HgA38",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-5-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=Modifica el mensaje {{ $('AI Agent1').item.json.output }} al siguiente formato: \n¡Hola, {{ $('Trigger: Presentación de formualario').item.json['Nombre y apellido'] }}!\n\nHemos recibido tu solicitud de turno para realizar el servicio en tu moto. A continuación, te compartimos los detalles:\n\n Servicio: {{servicio}}\n Fecha: {{fecha}}\n Turno: {{hora}}\n Precio estimado: {{precio}}\n\n\nPor favor, revisá la información y confirmá tu turno haciendo clic en \"Aceptar turno\".\n\nUna vez que aceptes, tu turno quedará registrado y confirmado en nuestro sistema.\n\nSi no podés asistir o necesitás modificar algún dato, contactanos antes de la fecha del turno.\n\n¡Gracias por confiar en nosotros! 🏍️🔧\n\nTaller de Motos MLT ProBikes\""
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        336,
+        -1584
+      ],
+      "id": "e130e585-a6ac-4db4-92a8-f339474427ab",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "UXIQrtFaqXJO8kgO",
+          "name": "OpenAI account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-5-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=\"Analiza este mensaje {{ $('Message a model').item.json.output[0].content[0].text }} y responde única y estrictamente con un objeto JSON válido (sin texto libre, sin markdown) con el siguiente formato exacto.\n- Cliente\n- Fecha\n- Turno\n- Servicio\n1. Para el campo 'Fecha', debes devolverla SIEMPRE en formato internacional D/M/YYYY (por ejemplo: '29/7/2026'). No uses barras ni formatos regionales.\n2. Para el campo 'turno', debes devolver SOLO el número entero de la hora seguido de la palabra 'horas' con los minutos (por ejemplo: si es '20:30 horas', escribe exactamente '20:30 horas').\n\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "textFormat": {
+            "textOptions": {
+              "type": "json_object"
+            }
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        1248,
+        -1808
+      ],
+      "id": "bfa085c2-77cf-4805-85ab-078969e8132f",
+      "name": "Message a model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "UXIQrtFaqXJO8kgO",
+          "name": "OpenAI account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4951a136-e541-4f63-ae50-4bcc3c1c9c75",
+              "leftValue": "={{ $json.Ciudad }}",
+              "rightValue": "Luque",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -864,
+        -976
+      ],
+      "id": "2184c4a6-2c4f-4e4a-8c42-d8c0193398aa",
+      "name": "Filter",
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "content": "TRIGGER INTELIGENTE\nSe utiliza como Trigger un formulario de N8N para el registro de datos del cliente. Este alimenta al Agente de AI",
+        "height": 224,
+        "width": 192
+      },
+      "id": "7cbcde5a-1a96-406e-9110-6a0d0fbbf2f4",
+      "name": "📋 SECCIÓN: GUARDRAILS (Seguridad IA)",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        -1248
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app8yJE8irWYVUPsQ",
+          "mode": "list",
+          "cachedResultName": "CODER",
+          "cachedResultUrl": "https://airtable.com/app8yJE8irWYVUPsQ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl154cjtDSIA5gTP",
+          "mode": "list",
+          "cachedResultName": "Solicitudes sin aplicar",
+          "cachedResultUrl": "https://airtable.com/app8yJE8irWYVUPsQ/tbl154cjtDSIA5gTP"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Contacto": "={{ $('Trigger: Presentación de formualario').item.json['Teléfono'] }}",
+            "Cliente": "={{ $('Trigger: Presentación de formualario').item.json['Nombre y apellido'] }}",
+            "Servicio": "={{ $('Trigger: Presentación de formualario').item.json['Por favor indique que servicio necesita su moto'] }}",
+            "Email": "={{ $('Trigger: Presentación de formualario').item.json.Email }}",
+            "Necesita revisión": "No se pudo coordinar el turno. Necesita revisión manual."
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Cliente",
+              "displayName": "Cliente",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Contacto",
+              "displayName": "Contacto",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Servicio",
+              "displayName": "Servicio",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Necesita revisión",
+              "displayName": "Necesita revisión",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1936,
+        -1248
+      ],
+      "id": "48320f5a-4911-4b8a-a386-8b54712d7a5e",
+      "name": "Nuevo registro de solicitud a revisar",
+      "retryOnFail": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "KLSTP2wSfS4HgA38",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "755835900",
+        "text": "Tienes una solicitud de turno pendiente de revisión manual. Por favor verifica la hoja de solicitudes sin aplicar.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2208,
+        -1424
+      ],
+      "id": "8a14d66c-2147-491d-8bae-bc60cce1fae0",
+      "name": "Avisar al mecánico sobre nueva solicitud a revisar",
+      "webhookId": "a610a2b8-d7db-48ad-b095-7ff6085cf9b8",
+      "notesInFlow": false,
+      "credentials": {
+        "telegramApi": {
+          "id": "SZjU7DHSc4LGQZiT",
+          "name": "MLT BOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "755835900",
+        "text": "El cliente a cancelado su solicitud, por lo que no se ha registrado el turno.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2384,
+        -1056
+      ],
+      "id": "21e4f25b-1ff2-4dcf-94b6-35cf9179c49d",
+      "name": "Notificar la cancelación de la solicitud",
+      "webhookId": "a610a2b8-d7db-48ad-b095-7ff6085cf9b8",
+      "notesInFlow": false,
+      "credentials": {
+        "telegramApi": {
+          "id": "SZjU7DHSc4LGQZiT",
+          "name": "MLT BOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "={{ $('Trigger: Presentación de formualario').item.json.Email }}",
+        "subject": "Reprogramación o cancelación",
+        "message": "¡Hola! Entendemos que no a aceptado la propuesta enviada.\n\nPor favor, respondé a este mismo correo indicándonos a que se debe:\n\nNo puedo en ese horario: Buscaremos alternativas en nuestra agenda y nos comunicaremos a la brevedad posible al contacto proporcionado.\n\nDesestimar la solicitud: Si preferís dejarlo para más adelante, avisanos y cancelamos el pedido sin problemas. \n\n¡Muchas gracias!\n\nSaludos,\n\nEl equipo de MLT Probikes",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Prefiero otra fecha y horario",
+            "disapproveLabel": "Cancelar mi solicitud"
+          }
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1280,
+        -1200
+      ],
+      "id": "93f8e3cf-91a2-4864-be9a-ff2a98579bb1",
+      "name": "Consultar al cliente las opciones",
+      "webhookId": "77e6afd1-209a-4e41-8e8f-c9861dff3a55",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "GeWaOYKswhRs1gDX",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app8yJE8irWYVUPsQ",
+          "mode": "list",
+          "cachedResultName": "CODER",
+          "cachedResultUrl": "https://airtable.com/app8yJE8irWYVUPsQ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbloLa14OuyP4dU98",
+          "mode": "list",
+          "cachedResultName": "Agenda",
+          "cachedResultUrl": "https://airtable.com/app8yJE8irWYVUPsQ/tbloLa14OuyP4dU98"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Fecha": "={{ $json.output[0].content[0].text.Fecha }}",
+            "Turno": "={{ $json.output[0].content[0].text.Turno }}",
+            "Status": "Reservado",
+            "Nombre y apellido": "={{ $json.output[0].content[0].text.Cliente }}",
+            "Contacto": "={{ $('Trigger: Presentación de formualario').item.json['Teléfono'] }}",
+            "Procesamiento con AI": "Registrado",
+            "Servicio": "={{ $json.output[0].content[0].text.Servicio }}"
+          },
+          "matchingColumns": [
+            "Fecha",
+            "Turno"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Turno",
+              "displayName": "Turno",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Disponible",
+                  "value": "Disponible"
+                },
+                {
+                  "name": "Reservado",
+                  "value": "Reservado"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Nombre y apellido",
+              "displayName": "Nombre y apellido",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Contacto",
+              "displayName": "Contacto",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Procesamiento con AI",
+              "displayName": "Procesamiento con AI",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Servicio",
+              "displayName": "Servicio",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Servicios",
+              "displayName": "Servicios",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Descripción del servicio (from Servicios)",
+              "displayName": "Descripción del servicio (from Servicios)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1568,
+        -1808
+      ],
+      "id": "9a0dbd3e-c8cb-48e9-b12d-7fe87fd194df",
+      "name": "Registrar el turno en la agenda",
+      "retryOnFail": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "KLSTP2wSfS4HgA38",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Trigger: Presentación de formualario').item.json.Email }}",
+        "subject": "Confirmación de turno  ",
+        "message": "= ¡Hemos registrado tu turno! Te esperamos en nuestro local el día  {{ $json.fields.Fecha }} a las {{ $json.fields.Turno }}! Saludos",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1776,
+        -1808
+      ],
+      "id": "154e26d9-d292-42ce-8e2a-e487746aadd7",
+      "name": "Notificar al cliente la confirmación del turno",
+      "webhookId": "ae605458-091a-4235-a3f2-936a6849a067",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "GeWaOYKswhRs1gDX",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "755835900",
+        "text": "Se ha registrado un nuevo turno. Por favor revisar la agenda. ",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2016,
+        -1808
+      ],
+      "id": "81739b88-2cbf-4cee-b281-12929c8ce076",
+      "name": "Notificar al mecánico el nuevo turno",
+      "webhookId": "a610a2b8-d7db-48ad-b095-7ff6085cf9b8",
+      "notesInFlow": false,
+      "credentials": {
+        "telegramApi": {
+          "id": "SZjU7DHSc4LGQZiT",
+          "name": "MLT BOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "={{ $('Trigger: Presentación de formualario').item.json.Email }}",
+        "subject": "=Solicitud de confirmación de turno para  {{ $('Trigger: Presentación de formualario').item.json['Por favor indique que servicio necesita su moto'] }}",
+        "message": "={{ $json.output[0].content[0].text }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Confirmo turno",
+            "disapproveLabel": "Cancelar solicitud"
+          }
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        -1584
+      ],
+      "id": "512f2ed5-7102-464f-b36a-0621d82626dd",
+      "name": "Pedir confirmación de turno al cliente",
+      "webhookId": "537cac0c-3c87-41f3-9c9e-0a0777530ac1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "GeWaOYKswhRs1gDX",
+          "name": "Gmail account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Trigger: Presentación de formualario').item.json.Email }}",
+        "subject": "=No pudimos procesar tu solicitud ",
+        "message": "=¡Hola! En este momento no pudimos registrar tu turno de forma automática en el sistema, pero no te preocupes. Nos vamos a comunicar con vos a la brevedad al para coordinar el horario directamente con el mecánico y dejar todo listo. ¡Muchas gracias por tu paciencia!",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        464,
+        -1152
+      ],
+      "id": "30a47214-6a54-49f7-b1d0-cc15499afce8",
+      "name": "Notificar al cliente la decisión del mecánico",
+      "webhookId": "6c4e2bfe-950c-4459-9c5b-b2b80401a39d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "GeWaOYKswhRs1gDX",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "755835900",
+        "message": "={{ $json.output }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double"
+          }
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -64,
+        -1104
+      ],
+      "id": "5e0b64e7-153b-4052-b76d-b0af6a2c7549",
+      "name": "Solicitar al mecánico confirmar el turno",
+      "webhookId": "0f4d5902-3240-4945-8e2d-93908162671b",
+      "notesInFlow": true,
+      "retryOnFail": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "SZjU7DHSc4LGQZiT",
+          "name": "MLT BOT"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "formTitle": "¡Solicitá tu turno para el taller!",
+        "formDescription": "Contanos qué le pasa a tu moto y qué servicio necesitás. Completá este formulario con tus datos y una breve descripción del problema para que podamos conocer el inconveniente y coordinar el mejor turno para vos.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Nombre y apellido",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Teléfono",
+              "fieldType": "number",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Por favor indique que servicio necesita su moto",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Mecánica General"
+                  },
+                  {
+                    "option": "Diagnóstico electrónico"
+                  },
+                  {
+                    "option": "Transmisión y cadena"
+                  },
+                  {
+                    "option": "Frenos"
+                  },
+                  {
+                    "option": "Suspensión"
+                  },
+                  {
+                    "option": "Ruedas"
+                  },
+                  {
+                    "option": "Servicio express"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Ciudad",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Luque"
+                  },
+                  {
+                    "option": "Otro"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -1088,
+        -976
+      ],
+      "id": "ab09e0b5-bcc8-467e-948e-81faa50a2e2d",
+      "name": "Trigger: Presentación de formualario",
+      "webhookId": "46462b6b-9c74-4147-b453-a7938b937598",
+      "notesInFlow": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app8yJE8irWYVUPsQ",
+          "mode": "list",
+          "cachedResultName": "CODER",
+          "cachedResultUrl": "https://airtable.com/app8yJE8irWYVUPsQ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblLmKFsO7AqAARkl",
+          "mode": "list",
+          "cachedResultName": "Errores en el workflow",
+          "cachedResultUrl": "https://airtable.com/app8yJE8irWYVUPsQ/tblLmKFsO7AqAARkl"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Id": "={{ $json.execution.id }}",
+            "Mensaje": "={{ $json.execution.error.message }}",
+            "Nombre": "={{ $json.workflow.name }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Nombre",
+              "displayName": "Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Mensaje",
+              "displayName": "Mensaje",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Id",
+              "displayName": "Id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        -880
+      ],
+      "id": "11caec1e-6018-4950-8319-705fc025c1f3",
+      "name": "Registra el error",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "KLSTP2wSfS4HgA38",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "FILTRO \nSe aplica el filtro con la condición de forma que debe tener cada dato",
+        "height": 192,
+        "width": 192,
+        "color": 3
+      },
+      "id": "ff0d0921-fb89-46fc-8aee-7333fbee32d9",
+      "name": "📋 SECCIÓN: GUARDRAILS (Seguridad IA)1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -864,
+        -1232
+      ]
+    },
+    {
+      "parameters": {
+        "content": "AGENTE AI\nEl agente debe analizar la BD de Airtable para determinar si hay turnos disponibles en el taller.\n\nBASE DE DATOS\nAirtable",
+        "height": 176,
+        "width": 288,
+        "color": 4
+      },
+      "id": "31de9767-623c-483b-b707-0bf0f7c15ad3",
+      "name": "📋 SECCIÓN: GUARDRAILS (Seguridad IA)2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        -848
+      ]
+    },
+    {
+      "parameters": {
+        "content": "HUMAN - IN - THE - LOOP\nSe necesita la validación del mecánico de taller para avanzar con la gestión del turno",
+        "width": 224,
+        "color": 3
+      },
+      "id": "68c956d7-2a7e-4030-9c04-a986156aff4f",
+      "name": "📋 SECCIÓN: GUARDRAILS (Seguridad IA)3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        -1296
+      ]
+    },
+    {
+      "parameters": {
+        "content": "\"VOZ\" de salida\nSe notifica al mecánico como finalizó el proceso de gestión del turno solicitado por el cliente através del BOT del taller.",
+        "width": 304,
+        "color": 3
+      },
+      "id": "ba257b58-62d0-4e22-b742-d1ae5ac4a1e4",
+      "name": "📋 SECCIÓN: GUARDRAILS (Seguridad IA)4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2288,
+        -1824
+      ]
+    },
+    {
+      "parameters": {
+        "content": "\"VOZ\" de salida\nSe notifica al mecánico como finalizó el proceso de gestión del turno solicitado por el cliente a tráves del taller.",
+        "height": 240,
+        "width": 192,
+        "color": 3
+      },
+      "id": "3d517403-e74f-41f3-b52d-0508f93de520",
+      "name": "📋 SECCIÓN: GUARDRAILS (Seguridad IA)5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2400,
+        -1344
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "57266d1c-f414-45b0-8d9a-c68baa980b5f",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "edf4d210-f5f1-484c-bde0-2e1efbe612e8",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        -1296
+      ],
+      "id": "318b224d-7faf-45cf-a2c1-bc5b1994e1b7",
+      "name": "¿El mecánico acepto el turno?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3ec7a231-efee-4e1b-ab04-acfe3cb105b5",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1008,
+        -1600
+      ],
+      "id": "67a51c7e-064a-4663-a4b5-d3a16749dc43",
+      "name": "¿El cliente acepta la propuesta?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f8701e93-4599-4a8c-9c7e-63483df0b1c0",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1584,
+        -1200
+      ],
+      "id": "0ba9239a-ddde-4b47-9e0c-189f90d3223f",
+      "name": "¿El cliente quiere otra opción?"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app8yJE8irWYVUPsQ",
+          "mode": "list",
+          "cachedResultName": "CODER",
+          "cachedResultUrl": "https://airtable.com/app8yJE8irWYVUPsQ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblLmKFsO7AqAARkl",
+          "mode": "list",
+          "cachedResultName": "Errores en el workflow",
+          "cachedResultUrl": "https://airtable.com/app8yJE8irWYVUPsQ/tblLmKFsO7AqAARkl"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Mensaje": "={{ $json.error.message }}",
+            "Nombre": "={{ $json.error.name }}",
+            "Error": "={{ $json.error.description }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Nombre",
+              "displayName": "Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Mensaje",
+              "displayName": "Mensaje",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Id",
+              "displayName": "Id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Error",
+              "displayName": "Error",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1968,
+        -1568
+      ],
+      "id": "44c34d54-2b97-4b92-833e-23fe93dea1c7",
+      "name": "Registra el error1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "KLSTP2wSfS4HgA38",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app8yJE8irWYVUPsQ",
+          "mode": "list",
+          "cachedResultName": "CODER",
+          "cachedResultUrl": "https://airtable.com/app8yJE8irWYVUPsQ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblLmKFsO7AqAARkl",
+          "mode": "list",
+          "cachedResultName": "Errores en el workflow",
+          "cachedResultUrl": "https://airtable.com/app8yJE8irWYVUPsQ/tblLmKFsO7AqAARkl"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Id": "={{ $json.execution.id }}",
+            "Mensaje": "={{ $json.execution.error.message }}",
+            "Nombre": "={{ $json.workflow.name }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Nombre",
+              "displayName": "Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Mensaje",
+              "displayName": "Mensaje",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Id",
+              "displayName": "Id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Error",
+              "displayName": "Error",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        2208,
+        -1184
+      ],
+      "id": "ca51c988-e098-488f-bc12-bc36757d5b3b",
+      "name": "Registra el error2",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "KLSTP2wSfS4HgA38",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Trigger: Presentación de formualario').item.json.Email }}",
+        "subject": "=No pudimos procesar tu solicitud ",
+        "message": "=¡Hola! Lamentamos no poder procesar tu solicitud ya que solo trabajamos en la zona de Luque.",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -992,
+        -752
+      ],
+      "id": "36369622-840c-4be9-88f3-c8477a0c1733",
+      "name": "Notificar al cliente que no se trabaja en su ciudad",
+      "webhookId": "6c4e2bfe-950c-4459-9c5b-b2b80401a39d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "GeWaOYKswhRs1gDX",
+          "name": "Gmail account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable Precio": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable Agenda": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Solicitar al mecánico confirmar el turno",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registra el error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Pedir confirmación de turno al cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model1": {
+      "main": [
+        [
+          {
+            "node": "Registrar el turno en la agenda",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notificar al cliente que no se trabaja en su ciudad",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nuevo registro de solicitud a revisar": {
+      "main": [
+        [
+          {
+            "node": "Avisar al mecánico sobre nueva solicitud a revisar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registra el error2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar al cliente las opciones": {
+      "main": [
+        [
+          {
+            "node": "¿El cliente quiere otra opción?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar el turno en la agenda": {
+      "main": [
+        [
+          {
+            "node": "Notificar al cliente la confirmación del turno",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registra el error1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar al cliente la confirmación del turno": {
+      "main": [
+        [
+          {
+            "node": "Notificar al mecánico el nuevo turno",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pedir confirmación de turno al cliente": {
+      "main": [
+        [
+          {
+            "node": "¿El cliente acepta la propuesta?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registra el error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Solicitar al mecánico confirmar el turno": {
+      "main": [
+        [
+          {
+            "node": "¿El mecánico acepto el turno?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registra el error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger: Presentación de formualario": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Registra el error": {
+      "main": [
+        []
+      ]
+    },
+    "¿El mecánico acepto el turno?": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notificar al cliente la decisión del mecánico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿El cliente acepta la propuesta?": {
+      "main": [
+        [
+          {
+            "node": "Message a model1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Consultar al cliente las opciones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿El cliente quiere otra opción?": {
+      "main": [
+        [
+          {
+            "node": "Nuevo registro de solicitud a revisar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notificar la cancelación de la solicitud",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "df500f45-6493-4706-8731-13356599b6b3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "88111f2ad278f45ab06a346ed0cbab7bc26eb2a1a0211a72352740cb92283f05"
+  },
+  "nodeGroups": [],
+  "id": "JW6JcBEQVxN97Rna",
+  "tags": []
+}
